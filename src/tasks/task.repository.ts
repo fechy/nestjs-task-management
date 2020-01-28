@@ -1,9 +1,8 @@
-import { EntityRepository, FindManyOptions, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskStatus } from './task-status.enum';
 import { GetTaskFilteredDto } from './dto/get-task-filtered.dto';
-import { FindConditions } from 'typeorm/find-options/FindConditions';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
@@ -20,11 +19,19 @@ export class TaskRepository extends Repository<Task> {
   }
 
   async getTasks(filterDto: GetTaskFilteredDto): Promise<Task[]> {
-    const criteria: FindManyOptions = {
-      where: {
-        status: filterDto.status,
-      } as FindConditions<Task>,
-    };
-    return await this.find(criteria);
+    const { status, search } = filterDto;
+    const query = this.createQueryBuilder('task');
+    if (status) {
+      query.andWhere(`task.status = :status`, { status });
+    }
+
+    if (search) {
+      query.andWhere(
+        `task.title LIKE :search OR task.description LIKE :search`,
+        { search: `%${search}%` },
+      );
+    }
+
+    return await query.getMany();
   }
 }

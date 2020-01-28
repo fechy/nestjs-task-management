@@ -22,14 +22,12 @@ import { Task } from './task.entity';
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  // @Get()
-  // getTasks(@Query(ValidationPipe) filterDto: GetTaskFilteredDto): Task[] {
-  //   if (Object.keys(filterDto).length > 0) {
-  //     return this.tasksService.getTasksWithFilter(filterDto);
-  //   }
-  //
-  //   return this.tasksService.getAllTasks();
-  // }
+  @Get()
+  getTasks(
+    @Query(ValidationPipe) filterDto: GetTaskFilteredDto,
+  ): Promise<Task[]> {
+    return this.tasksService.getTasks(filterDto);
+  }
 
   @Get(':id')
   getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
